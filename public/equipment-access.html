@@ -425,61 +425,28 @@
     });
   </script>
 
-<script id="FAIRVIA_EQUIPMENT_AUTOFILL_TEST_V1">
+
+
+<script id="FAIRVIA_EQUIPMENT_AUTOFILL_TEST_V2">
 (function () {
   const params = new URLSearchParams(window.location.search);
   if (params.get("test") !== "1") return;
 
-  const testValues = {
-    name: "Keika Ikebe",
-    company: "Il Nautico Test Client",
-    email: "test@example.com",
-
-    project_stage: "Pre-commercial validation",
-    product_type: "Dry goods packaging film / shopping bag",
-    application: "Dry goods packaging / shopping bag for retail and light-duty packaging applications",
-
-    current_material: "LDPE / LLDPE blend",
-    processing_method: "Blown film extrusion",
-    equipment_type: "Existing single-screw blown film extrusion line with annular die and standard air-ring cooling",
-
-    target_biodegradable_material: "PHA-based biodegradable blown film compound",
-    transition_reason: "Sustainability / biodegradable material transition",
-    main_technical_concern: "Thermal stability, melt flow consistency, bubble stability, gauge variation, seal-window stability, and long-run process reliability",
-    known_issues: "warpage, unstable sealing, thickness variation, poor output consistency",
-
-    screw_diameter: "65 mm",
-    ld_ratio: "28:1",
-    die_mold_information: "Annular blown film die for LDPE / LLDPE shopping bag film. No die modification has been confirmed. Die gap, air-ring cooling balance, and haul-off conditions may require adjustment depending on PHA melt strength and viscosity behaviour.",
-    what_matters_most: "Dimensional stability / thickness consistency",
-    critical_area: "Processing stability",
-    additional_notes: "no equipment modification preferred, high-speed production, hot-fill use"
-  };
-
-  function norm(x) {
-    return String(x || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  }
-
-  function setField(key, value) {
-    const target = norm(key);
-    const fields = Array.from(document.querySelectorAll("input, textarea, select"));
-
-    let el = fields.find(f => norm(f.name) === target || norm(f.id) === target);
-    if (!el) {
-      el = fields.find(f => {
-        const label = f.closest("label")?.innerText || "";
-        const parent = f.parentElement?.innerText || "";
-        return norm(label).includes(target) || norm(parent).includes(target);
-      });
-    }
+  function setValue(el, value) {
     if (!el) return;
 
     if (el.tagName === "SELECT") {
-      const options = Array.from(el.options);
-      const exact = options.find(o => norm(o.value) === norm(value) || norm(o.textContent) === norm(value));
-      const partial = options.find(o => norm(value).includes(norm(o.value)) || norm(value).includes(norm(o.textContent)) || norm(o.textContent).includes(norm(value)));
-      const chosen = exact || partial;
-      if (chosen) el.value = chosen.value;
+      const opts = Array.from(el.options);
+      const nv = String(value).toLowerCase();
+      const found =
+        opts.find(o => String(o.textContent).toLowerCase().includes(nv)) ||
+        opts.find(o => nv.includes(String(o.textContent).toLowerCase())) ||
+        opts.find(o => String(o.value).toLowerCase().includes(nv)) ||
+        opts.find(o => String(o.textContent).toLowerCase().includes("processing")) ||
+        opts.find(o => String(o.textContent).toLowerCase().includes("dimensional")) ||
+        opts.find(o => String(o.textContent).toLowerCase().includes("stability")) ||
+        opts[1];
+      if (found) el.value = found.value;
     } else {
       el.value = value;
     }
@@ -488,10 +455,44 @@
     el.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
-  Object.entries(testValues).forEach(([key, value]) => setField(key, value));
+  const fields = Array.from(document.querySelectorAll("input, textarea, select"))
+    .filter(el => {
+      const type = String(el.type || "").toLowerCase();
+      return !["hidden", "submit", "button"].includes(type);
+    });
+
+  const values = [
+    "Keika Ikebe",
+    "Il Nautico Test Client",
+    "test@example.com",
+
+    "Pre-commercial validation",
+    "Dry goods packaging film / shopping bag",
+    "Dry goods packaging / shopping bag for retail and light-duty packaging applications",
+
+    "LDPE / LLDPE blend",
+    "Blown film extrusion",
+    "Existing single-screw blown film extrusion line with annular die and standard air-ring cooling",
+
+    "PHA-based biodegradable blown film compound",
+    "Sustainability / biodegradable material transition",
+    "Thermal stability, melt flow consistency, bubble stability, gauge variation, seal-window stability, and long-run process reliability",
+    "warpage, unstable sealing, thickness variation, poor output consistency",
+
+    "65 mm",
+    "28:1",
+    "Annular blown film die for LDPE / LLDPE shopping bag film. No die modification has been confirmed. Die gap, air-ring cooling balance, and haul-off conditions may require adjustment depending on PHA melt strength and viscosity behaviour.",
+    "Dimensional stability / thickness consistency",
+    "Processing stability",
+    "no equipment modification preferred, high-speed production, hot-fill use"
+  ];
+
+  fields.forEach((el, i) => {
+    if (values[i] !== undefined) setValue(el, values[i]);
+  });
 
   const note = document.createElement("div");
-  note.textContent = "Test data auto-filled";
+  note.textContent = "Test data auto-filled by field order";
   note.style.cssText = "position:fixed;right:18px;bottom:18px;background:#102033;color:#fff;padding:10px 14px;border-radius:999px;font:700 13px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;z-index:99999;box-shadow:0 12px 30px rgba(16,32,51,.22)";
   document.body.appendChild(note);
   setTimeout(() => note.remove(), 3500);
