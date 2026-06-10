@@ -77,7 +77,219 @@ function normalizeInput(raw) {
 // § 3  SCORING ENGINE
 // ══════════════════════════════════════════════════════════════
 
-function calculateScores(input) {
+
+// =========================================================
+// RELEASE FIX: Equipment form mapping + risk penalty logic
+// Purpose:
+// - map real paid-access form fields into report engine fields
+// - prevent overly optimistic HIGH results for hot-fill / sealing / gauge / no-modification risks
+// =========================================================
+
+function pickFirst(obj, keys, fallback = "") {
+  for (const key of keys) {
+    const value = obj && obj[key];
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return String(value).trim();
+    }
+  }
+  return fallback;
+}
+
+function looksLikeMaterial(value) {
+  const v = String(value || "").toLowerCase();
+  return /\b(ldpe|lldpe|hdpe|pp|pet|ps|pla|pbat|pha|pe)\b/.test(v);
+}
+
+function normalizeEquipmentFormPayload(raw = {}) {
+  const productType = pickFirst(raw, [
+    "product_type",
+    "productType",
+    "product",
+    "Product type",
+    "type"
+  ]);
+
+  const applicationRaw = pickFirst(raw, [
+    "application",
+    "product_application",
+    "productApplication",
+    "Application"
+  ]);
+
+  const currentMaterialRaw = pickFirst(raw, [
+    "current_material",
+    "currentMaterial",
+    "material",
+    "Current material"
+  ]);
+
+  const targetMaterial = pickFirst(raw, [
+    "target_biodegradable_material",
+    "target_material",
+    "bio_material",
+    "biomaterial",
+    "transition_material",
+    "Target biodegradable material"
+  ]);
+
+  const application =
+    looksLikeMaterial(applicationRaw) && productType
+      ? productType
+      : (applicationRaw || productType || "this application");
+
+  const currentMaterial =
+    currentMaterialRaw ||
+    (looksLikeMaterial(applicationRaw) ? applicationRaw : "");
+
+  const processing = pickFirst(raw, [
+    "processing_method",
+    "processingMethod",
+    "processing",
+    "process",
+    "Processing method"
+  ]);
+
+  const equipment = pickFirst(raw, [
+    "equipment_type",
+    "equipmentType",
+    "equipment",
+    "line",
+    "Equipment type"
+  ]);
+
+  const issues = pickFirst(raw, [
+    "known_issues",
+    "knownIssues",
+    "issues",
+    "Known issues with the current product or process"
+  ]);
+
+  const concern = pickFirst(raw, [
+    "main_technical_concern",
+    "technical_concern",
+    "concern",
+    "critical_area",
+    "Which area is most critical?",
+    "Main technical concern"
+  ]);
+
+  const additionalNotes = pickFirst(raw, [
+    "additional_notes",
+    "additionalNotes",
+    "notes",
+    "Additional notes"
+  ]);
+
+  const dieInfo = pickFirst(raw, [
+    "die_mold_information",
+    "die_mold_info",
+    "die_info",
+    "Die / mold information"
+  ]);
+
+  return {
+    ...raw,
+
+    // canonical fields used by report engine
+    application,
+    product_type: productType,
+    material: currentMaterial || pickFirst(raw, ["material"], "current material"),
+    current_material: currentMaterial || pickFirst(raw, ["material"], ""),
+    bio_material: targetMaterial || pickFirst(raw, ["bio_material"], "target biodegradable material"),
+    target_material: targetMaterial,
+    processing,
+    equipment,
+    issues,
+    concern,
+    additional_notes: additionalNotes,
+    die_mold_information: dieInfo,
+
+    // combined narrative context used by risk logic
+    _risk_context: [
+      application,
+      productType,
+      currentMaterial,
+      targetMaterial,
+      processing,
+      equipment,
+      issues,
+      concern,
+      additionalNotes,
+      dieInfo,
+      pickFirst(raw, ["what_matters_most", "What matters most for this product?"]),
+      pickFirst(raw, ["critical_area", "Which area is most critical?"])
+    ].filter(Boolean).join(" | ")
+  };
+}
+
+function applyEquipmentRiskPenalties(scores, input = {}) {
+  const out = { ...scores };
+  const ctx = String(input._risk_context || Object.values(input).join(" ")).toLowerCase();
+
+  const lower = (field) => String(input[field] || "").toLowerCase();
+
+  const has = (...words) => words.some(w => ctx.includes(w));
+
+  let thermalPenalty = 0;
+  let flowPenalty = 0;
+  let mechanicalPenalty = 0;
+
+  // High-risk use conditions
+  if (has("hot-fill", "hot fill", "high temperature filling")) {
+    thermalPenalty += 18;
+    mechanicalPenalty += 8;
+  }
+
+  if (has("high-speed", "high speed", "higher line-speed", "higher line speed")) {
+    flowPenalty += 8;
+  }
+
+  if (has("no equipment modification", "no modification", "existing line only", "minimize equipment modification")) {
+    thermalPenalty += 5;
+    flowPenalty += 5;
+  }
+
+  // Known failure modes
+  if (has("unstable sealing", "seal-window", "seal window", "seal strength", "sealing")) {
+    flowPenalty += 7;
+    mechanicalPenalty += 5;
+  }
+
+  if (has("thickness variation", "gauge variation", "dimensional variation", "warpage", "poor output consistency", "bubble instability")) {
+    flowPenalty += 9;
+    mechanicalPenalty += 5;
+  }
+
+  if (has("pressure fluctuation", "melt instability", "melt strength variation", "output inconsistency")) {
+    flowPenalty += 8;
+  }
+
+  // Material-specific sensitivity
+  if (has("pha")) {
+    thermalPenalty += 8;
+    flowPenalty += 5;
+  }
+
+  if (has("pla", "pbat")) {
+    thermalPenalty += 7;
+  }
+
+  if (has("processing stability", "thermal stability")) {
+    thermalPenalty += 4;
+    flowPenalty += 4;
+  }
+
+  out.thermal = Math.max(35, Math.round((Number(out.thermal) || 0) - thermalPenalty));
+  out.flow = Math.max(35, Math.round((Number(out.flow) || 0) - flowPenalty));
+  out.mechanical = Math.max(35, Math.round((Number(out.mechanical) || 0) - mechanicalPenalty));
+
+  out.total = Math.round((out.thermal + out.flow + out.mechanical) / 3);
+
+  return out;
+}
+
+
+function applyEquipmentRiskPenalties(calculateScores(input), input) {
   let thermal   = 85;
   let flow       = 85;
   let mechanical = 85;
@@ -714,13 +926,15 @@ function generateOverlay(scores) {
 // ══════════════════════════════════════════════════════════════
 
 app.post("/generate-report", async (req, res) => {
-  try {
+  
+  const input = normalizeEquipmentFormPayload(req.body || {});
+try {
     console.log("RAW BODY:", JSON.stringify(req.body, null, 2));
 
     const input = normalizeInput(req.body);
 
     // --- Deterministic engine ---
-    const scores     = calculateScores(input);
+    const scores     = applyEquipmentRiskPenalties(calculateScores(input), input);
     const constraint = getConstraint(scores);
     const decision   = determineDecision(scores.total);
     const economic   = calculateEconomic(scores.total);
