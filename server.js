@@ -289,7 +289,7 @@ function applyEquipmentRiskPenalties(scores, input = {}) {
 }
 
 
-function applyEquipmentRiskPenalties(calculateScores(input), input) {
+function calculateScores(input) {
   let thermal   = 85;
   let flow       = 85;
   let mechanical = 85;
