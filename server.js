@@ -905,6 +905,8 @@ app.get("/equipment-access", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "equipment-access.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`[FairVia] Server running on port ${PORT}`);
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`[FairVia Equipment Demo] Server running on port ${PORT}`);
 });
