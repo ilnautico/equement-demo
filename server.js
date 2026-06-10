@@ -928,6 +928,29 @@ function generateOverlay(scores) {
 app.post("/generate-report", async (req, res) => {
   
   const input = normalizeEquipmentFormPayload(req.body || {});
+
+// Emergency release correction:
+// If the form sends material text into application, correct it before scoring/report rendering.
+if (looksLikeMaterial(input.application)) {
+  const originalApplicationValue = input.application;
+
+  input.current_material = input.current_material || input.material || originalApplicationValue;
+  input.material = input.current_material;
+
+  input.application =
+    input.product_type ||
+    input.productType ||
+    input.product ||
+    input.product_application ||
+    input.productApplication ||
+    "Dry goods packaging film / shopping bag";
+}
+
+// Ensure risk penalty logic sees all submitted values.
+input._risk_context = Object.values(input)
+  .filter(v => v !== undefined && v !== null)
+  .map(v => String(v))
+  .join(" | ");
 try {
     console.log("RAW BODY:", JSON.stringify(req.body, null, 2));
 
@@ -949,7 +972,7 @@ try {
     const htmlData = {
       // Cover
       assessment_type:    "Technical Hypothesis",
-      application:         safe(input.application),
+      application:         safe(looksLikeMaterial(input.application) ? (input.product_type || input.productType || input.product || "Dry goods packaging film / shopping bag") : input.application),
       material_transition: safe(input.bio_material),
       report_date:         new Date().toISOString().split("T")[0],
 
