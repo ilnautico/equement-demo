@@ -427,10 +427,147 @@
 
 
 
-<script id="FAIRVIA_EQUIPMENT_AUTOFILL_TEST_V2">
+
+
+<script id="FAIRVIA_EQUIPMENT_AUTOFILL_TEST_V3">
 (function () {
   const params = new URLSearchParams(window.location.search);
-  if (params.get("test") !== "1") return;
+  const test = String(params.get("test") || "").toLowerCase();
+  if (!test) return;
+
+  const cases = {
+    "1": [
+      "Keika Ikebe",
+      "Il Nautico Test Case 01",
+      "test@example.com",
+      "Early feasibility screening",
+      "Thin flexible packaging film",
+      "Non-food dry goods secondary packaging film for low-load retail items",
+      "LDPE / LLDPE blend",
+      "Blown film extrusion",
+      "Existing single-screw blown film extrusion line with standard annular die and air-ring cooling",
+      "PLA / PBAT flexible film compound",
+      "Customer-driven sustainability request for low-risk secondary packaging",
+      "Basic process compatibility, thickness consistency, and sealability under moderate line speed",
+      "No major current production issue. Existing LDPE / LLDPE process is stable. The client wants to confirm whether the biodegradable compound can be processed without major equipment changes.",
+      "55 mm",
+      "28:1",
+      "Standard annular blown film die currently used for LDPE / LLDPE secondary packaging film. No die modification planned at screening stage.",
+      "Stable film appearance and basic thickness consistency",
+      "Processing stability",
+      "moderate line speed, no hot-fill use, no direct food contact, no high mechanical load, equipment modification should be minimized"
+    ],
+
+    "2": [
+      "Keika Ikebe",
+      "Il Nautico Test Case 02",
+      "test@example.com",
+      "Pre-commercial validation",
+      "Dry goods packaging film / shopping bag",
+      "Dry goods packaging / shopping bag for retail and light-duty packaging applications",
+      "LDPE / LLDPE blend",
+      "Blown film extrusion",
+      "Existing single-screw blown film extrusion line with annular die and standard air-ring cooling",
+      "PHA-based biodegradable blown film compound",
+      "Sustainability / biodegradable material transition",
+      "Thermal stability, melt flow consistency, bubble stability, gauge variation, seal-window stability, and long-run process reliability",
+      "warpage, unstable sealing, thickness variation, poor output consistency",
+      "65 mm",
+      "28:1",
+      "Annular blown film die for LDPE / LLDPE shopping bag film. No die modification has been confirmed. Die gap, air-ring cooling balance, and haul-off conditions may require adjustment depending on PHA melt strength and viscosity behaviour.",
+      "Dimensional stability / thickness consistency",
+      "Processing stability",
+      "no equipment modification preferred, high-speed production, hot-fill use"
+    ],
+
+    "3": [
+      "Keika Ikebe",
+      "Il Nautico Test Case 03",
+      "test@example.com",
+      "Commercial replacement request",
+      "High-clarity food-contact pouch film",
+      "Transparent pouch film for hot-filled food products requiring seal integrity and shelf-life stability",
+      "PET / PE laminated structure",
+      "Film extrusion and lamination",
+      "Existing extrusion coating / lamination line with sealing process downstream",
+      "PLA / PHA biodegradable film structure",
+      "Customer request to replace conventional food-contact packaging with biodegradable packaging",
+      "Hot-fill resistance, seal integrity, transparency, moisture sensitivity, thermal deformation, and food-contact compliance",
+      "Existing product requires high transparency, stable seal strength, low warpage, low haze, and resistance to deformation during hot-fill and storage. The biodegradable alternative has not been validated for food-contact, hot-fill, or shelf-life performance.",
+      "75 mm",
+      "30:1",
+      "Flat die / extrusion coating die used for current laminated packaging structure. Existing downstream sealing equipment is optimized for PET / PE laminate.",
+      "Seal integrity and hot-fill dimensional stability",
+      "Thermal stability",
+      "direct food contact, hot-fill use, high transparency requirement, long shelf-life requirement, no major equipment modification preferred, commercial replacement expected quickly"
+    ],
+
+    "4": [
+      "Keika Ikebe",
+      "Il Nautico Test Case 04",
+      "test@example.com",
+      "Engineering compatibility assessment",
+      "Injection molded consumer product component",
+      "Small rigid consumer goods component requiring dimensional stability, surface quality, and moderate impact resistance",
+      "PP copolymer",
+      "Injection molding",
+      "Existing electric injection molding machine with general-purpose screw and multi-cavity mold",
+      "PLA-based injection molding compound with impact modifier",
+      "Brand-driven sustainability transition for non-food consumer product components",
+      "Mold filling, shrinkage behaviour, brittleness, cycle time, thermal degradation, and dimensional tolerance",
+      "Current PP part fills consistently and has acceptable impact resistance. The target PLA-based material may show higher brittleness, narrower thermal processing window, different shrinkage behaviour, and possible warpage in multi-cavity molding.",
+      "45 mm",
+      "22:1",
+      "Existing multi-cavity injection mold designed for PP copolymer. Gate design, cooling layout, and shrinkage allowance were not designed for PLA-based material.",
+      "Dimensional accuracy and impact resistance",
+      "Mechanical stability",
+      "no food contact, no hot-fill use, moderate cosmetic surface requirement, existing mold preferred, limited tolerance for warpage or brittle failure"
+    ],
+
+    "5": [
+      "Keika Ikebe",
+      "Il Nautico Test Case 05",
+      "test@example.com",
+      "Early feasibility screening",
+      "Sterile medical packaging film",
+      "Sterile barrier packaging film for single-use medical device components",
+      "PET / PE medical-grade laminate",
+      "Film extrusion / lamination / heat sealing",
+      "Existing medical packaging conversion line with validated sealing and sterilization workflow",
+      "PLA / PBAT / PHA biodegradable medical packaging candidate",
+      "Long-term investigation of lower-impact material options for medical packaging",
+      "Sterile barrier performance, seal integrity, biocompatibility, sterilization resistance, moisture sensitivity, regulatory validation, and long-term storage stability",
+      "The current PET / PE laminate is validated for sterile barrier performance and sealing reliability. No biodegradable candidate has been validated for sterilization, microbial barrier performance, aging stability, or regulatory acceptance.",
+      "60 mm",
+      "30:1",
+      "Existing film and lamination tooling used for medical-grade PET / PE laminate. Sealing jaws and validation parameters are qualified for the current material only.",
+      "Sterile barrier integrity and regulatory validation",
+      "Application safety / compliance",
+      "sterile barrier, medical device packaging, sterilization exposure, strict seal integrity requirement, long-term aging stability required, no substitution allowed without validation, regulatory evidence missing"
+    ]
+  };
+
+  const aliases = {
+    "case01": "1",
+    "case1": "1",
+    "low": "1",
+    "case02": "2",
+    "case2": "2",
+    "medium": "2",
+    "case03": "3",
+    "case3": "3",
+    "food": "3",
+    "case04": "4",
+    "case4": "4",
+    "injection": "4",
+    "case05": "5",
+    "case5": "5",
+    "medical": "5"
+  };
+
+  const key = aliases[test] || test;
+  const values = cases[key];
+  if (!values) return;
 
   function setValue(el, value) {
     if (!el) return;
@@ -438,14 +575,17 @@
     if (el.tagName === "SELECT") {
       const opts = Array.from(el.options);
       const nv = String(value).toLowerCase();
+
       const found =
         opts.find(o => String(o.textContent).toLowerCase().includes(nv)) ||
         opts.find(o => nv.includes(String(o.textContent).toLowerCase())) ||
         opts.find(o => String(o.value).toLowerCase().includes(nv)) ||
         opts.find(o => String(o.textContent).toLowerCase().includes("processing")) ||
-        opts.find(o => String(o.textContent).toLowerCase().includes("dimensional")) ||
+        opts.find(o => String(o.textContent).toLowerCase().includes("mechanical")) ||
+        opts.find(o => String(o.textContent).toLowerCase().includes("thermal")) ||
         opts.find(o => String(o.textContent).toLowerCase().includes("stability")) ||
         opts[1];
+
       if (found) el.value = found.value;
     } else {
       el.value = value;
@@ -461,38 +601,12 @@
       return !["hidden", "submit", "button"].includes(type);
     });
 
-  const values = [
-    "Keika Ikebe",
-    "Il Nautico Test Client",
-    "test@example.com",
-
-    "Pre-commercial validation",
-    "Dry goods packaging film / shopping bag",
-    "Dry goods packaging / shopping bag for retail and light-duty packaging applications",
-
-    "LDPE / LLDPE blend",
-    "Blown film extrusion",
-    "Existing single-screw blown film extrusion line with annular die and standard air-ring cooling",
-
-    "PHA-based biodegradable blown film compound",
-    "Sustainability / biodegradable material transition",
-    "Thermal stability, melt flow consistency, bubble stability, gauge variation, seal-window stability, and long-run process reliability",
-    "warpage, unstable sealing, thickness variation, poor output consistency",
-
-    "65 mm",
-    "28:1",
-    "Annular blown film die for LDPE / LLDPE shopping bag film. No die modification has been confirmed. Die gap, air-ring cooling balance, and haul-off conditions may require adjustment depending on PHA melt strength and viscosity behaviour.",
-    "Dimensional stability / thickness consistency",
-    "Processing stability",
-    "no equipment modification preferred, high-speed production, hot-fill use"
-  ];
-
   fields.forEach((el, i) => {
     if (values[i] !== undefined) setValue(el, values[i]);
   });
 
   const note = document.createElement("div");
-  note.textContent = "Test data auto-filled by field order";
+  note.textContent = "Test Case " + key + " auto-filled";
   note.style.cssText = "position:fixed;right:18px;bottom:18px;background:#102033;color:#fff;padding:10px 14px;border-radius:999px;font:700 13px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;z-index:99999;box-shadow:0 12px 30px rgba(16,32,51,.22)";
   document.body.appendChild(note);
   setTimeout(() => note.remove(), 3500);
