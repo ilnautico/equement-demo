@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FairVia™ Report Ready</title>
+  <style>
+    :root {
+      --navy: #102033;
+      --muted: #6b7a88;
+      --line: #dbe4ea;
+      --accent: #7fa6b8;
+      --bg: #f6f9fb;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(127,166,184,.22), transparent 32%),
+        linear-gradient(180deg, #f8fbfd 0%, #eef4f7 100%);
+      color: var(--navy);
+    }
+
+    .card {
+      width: min(620px, calc(100vw - 40px));
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 38px;
+      box-shadow: 0 24px 70px rgba(16,32,51,.08);
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: 32px;
+      letter-spacing: -0.04em;
+    }
+
+    p {
+      margin: 0 0 18px;
+      line-height: 1.75;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    a {
+      display: inline-flex;
+      margin-top: 8px;
+      color: #fff;
+      background: var(--navy);
+      text-decoration: none;
+      padding: 13px 18px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="eyebrow">FairVia™ Equipment Demo</div>
+    <h1>Your report has been generated.</h1>
+    <p>
+      The FairVia™ Technical Hypothesis Report has been generated successfully.
+      If your browser opened or downloaded the PDF, you can review it now.
+    </p>
+    <p>
+      This demo report is intended for pre-commercial technical screening and remains subject to supplier data,
+      physical trials, and engineering validation.
+    </p>
+    <a href="/equipment-access?token=FVE-ILN-202606-EQ01">Return to assessment form</a>
+  </main>
+</body>
+</html>
