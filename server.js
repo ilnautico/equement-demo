@@ -838,9 +838,6 @@ app.get("/health", (_req, res) => {
 // START
 // ══════════════════════════════════════════════════════════════
 
-const PORT = process.env.PORT || 8080;
-
-
 app.get("/report-ready", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "report-ready.html"));
 });
