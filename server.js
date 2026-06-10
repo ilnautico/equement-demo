@@ -8,6 +8,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+function isValidDemoToken(token) {
+  const expected = process.env.EQUIPMENT_DEMO_TOKEN || "FVE-DEMO-2026";
+  return Boolean(token && token === expected);
+}
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -840,6 +846,62 @@ app.get("/report-ready", (req, res) => {
 });
 
 app.get("/equipment-access", (req, res) => {
+  const token = String(req.query.token || "");
+  if (!isValidDemoToken(token)) {
+    return res.status(403).send(`
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>FairVia™ Demo Access</title>
+          <style>
+            body {
+              margin: 0;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+              background: #f6f9fb;
+              color: #102033;
+              display: grid;
+              place-items: center;
+              min-height: 100vh;
+            }
+            .card {
+              width: min(560px, calc(100vw - 40px));
+              background: white;
+              border: 1px solid #dbe4ea;
+              border-radius: 22px;
+              padding: 34px;
+              box-shadow: 0 24px 70px rgba(16,32,51,.08);
+            }
+            .eyebrow {
+              font-size: 12px;
+              letter-spacing: .16em;
+              text-transform: uppercase;
+              color: #7fa6b8;
+              font-weight: 800;
+              margin-bottom: 12px;
+            }
+            h1 {
+              margin: 0 0 12px;
+              font-size: 28px;
+            }
+            p {
+              margin: 0;
+              color: #6b7a88;
+              line-height: 1.7;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <div class="eyebrow">FairVia™ Equipment Demo</div>
+            <h1>Demo access required</h1>
+            <p>This assessment form is available only through an issued demo access link.</p>
+          </div>
+        </body>
+      </html>
+    `);
+  }
+
   res.sendFile(path.join(__dirname, "public", "equipment-access.html"));
 });
 
