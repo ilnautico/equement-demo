@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FairVia™ Equipment Compatibility Assessment</title>
+  <style>
+    :root {
+      --navy: #102033;
+      --ink: #243447;
+      --muted: #6b7a88;
+      --line: #dbe4ea;
+      --bg: #f6f9fb;
+      --card: #ffffff;
+      --accent: #7fa6b8;
+      --accent2: #c97b73;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(127,166,184,0.22), transparent 30%),
+        linear-gradient(180deg, #f8fbfd 0%, #eef4f7 100%);
+      color: var(--ink);
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 48px 22px 72px;
+    }
+
+    .hero {
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--navy);
+      font-size: 40px;
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+      max-width: 760px;
+    }
+
+    .lead {
+      margin-top: 16px;
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--muted);
+      max-width: 760px;
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.86);
+      border: 1px solid rgba(219,228,234,0.9);
+      box-shadow: 0 24px 70px rgba(16,32,51,0.08);
+      border-radius: 24px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+    }
+
+    .section-title {
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--navy);
+      font-weight: 800;
+      margin: 4px 0 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--navy);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #ffffff;
+      padding: 13px 14px;
+      font-size: 14px;
+      color: var(--ink);
+      outline: none;
+    }
+
+    textarea {
+      min-height: 94px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(127,166,184,0.16);
+    }
+
+    .hint {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 26px;
+      border-top: 1px solid var(--line);
+      padding-top: 22px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 22px;
+      background: var(--navy);
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    @media (max-width: 720px) {
+      h1 {
+        font-size: 31px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">FairVia™ Equipment Compatibility Assessment</div>
+      <h1>Technical hypothesis intake for existing equipment transition planning.</h1>
+      <p class="lead">
+        This form collects the minimum technical inputs required to generate a FairVia™ Technical Hypothesis Report
+        for material feasibility, processing behaviour, product realization risk, and pilot validation planning.
+      </p>
+    </section>
+
+    <form class="panel" id="equipmentForm">
+      <div class="section-title">Project Inputs</div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="application">Application</label>
+          <input id="application" name="application" value="dry goods packaging / shopping bag" required />
+          <div class="hint">Example: shopping bag, pouch film, injection molded part, tray, sheet.</div>
+        </div>
+
+        <div class="field">
+          <label for="processing">Processing Method</label>
+          <select id="processing" name="processing" required>
+            <option value="film extrusion">Film extrusion</option>
+            <option value="blown film extrusion">Blown film extrusion</option>
+            <option value="sheet extrusion">Sheet extrusion</option>
+            <option value="injection molding">Injection molding</option>
+            <option value="thermoforming">Thermoforming</option>
+            <option value="blow molding">Blow molding</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="material">Current Material</label>
+          <input id="material" name="material" value="LDPE" required />
+          <div class="hint">Example: LDPE, LLDPE, PP, PET, PS, conventional resin.</div>
+        </div>
+
+        <div class="field">
+          <label for="bio_material">Target Material</label>
+          <input id="bio_material" name="bio_material" value="PLA/PBAT blend" required />
+          <div class="hint">Example: PLA/PBAT blend, PHA blend, biodegradable compound.</div>
+        </div>
+
+        <div class="field full">
+          <label for="equipment">Existing Equipment / Line</label>
+          <input id="equipment" name="equipment" value="existing blown film extrusion line" required />
+        </div>
+
+        <div class="field">
+          <label for="scale">Validation Scale</label>
+          <select id="scale" name="scale" required>
+            <option value="pilot validation">Pilot validation</option>
+            <option value="bench-scale screening">Bench-scale screening</option>
+            <option value="pre-commercial trial">Pre-commercial trial</option>
+            <option value="commercial line review">Commercial line review</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="project_stage">Project Stage</label>
+          <select id="project_stage" name="project_stage" required>
+            <option value="pre-commercial transition planning">Pre-commercial transition planning</option>
+            <option value="initial feasibility screening">Initial feasibility screening</option>
+            <option value="supplier material review">Supplier material review</option>
+            <option value="pilot preparation">Pilot preparation</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label for="issues">Known Processing Issues</label>
+          <textarea id="issues" name="issues">flow stability, melt uniformity, pressure fluctuation</textarea>
+        </div>
+
+        <div class="field full">
+          <label for="concern">Primary Concern</label>
+          <textarea id="concern" name="concern">extended production stability and output consistency</textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="submitBtn" type="submit">Generate Technical Hypothesis Report</button>
+        <div class="status" id="status">PDF will be generated from the Equipment report engine.</div>
+      </div>
+
+      <div class="footer-note">
+        This demo generates an indicative technical hypothesis report. Conclusions remain subject to supplier data,
+        physical trials, and engineering validation.
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById("equipmentForm");
+    const statusEl = document.getElementById("status");
+    const submitBtn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      submitBtn.disabled = true;
+      statusEl.textContent = "Generating PDF report...";
+
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      try {
+        const res = await fetch("/generate-report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "PDF generation failed");
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "FairVia-Equipment-Technical-Hypothesis-Report.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        statusEl.textContent = "Report generated. PDF opened and downloaded.";
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "Error: " + err.message;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

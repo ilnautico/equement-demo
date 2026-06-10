@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FairVia™ Technical Hypothesis Report</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:        #0C1C2E;
+  --navy-soft:   #2C4A6E;
+  --block-light: #F9FCFF;
+  --block-mid:   #E6EFF8;
+  --block-deep:  #DDE8F2;
+  --sep:         #E6EDF3;
+  --text-body:   #374151;
+  --text-muted:  #6B7A8E;
+  --text-label:  #9AA5B4;
+  --accent-warn: #CFAE5D;
+  --accent-low:  #7A6EB0;
+  --accent-ok:   #3B82A0;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #F4F7FA;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--text-body);
+  font-size: 13px;
+  line-height: 1.68;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── PAGE ── */
+.page {
+  width: 210mm;
+  margin: 20mm auto;
+  background: white;
+  box-shadow: 0 2px 32px rgba(12,28,46,0.07), 0 1px 6px rgba(12,28,46,0.04);
+  overflow: hidden;
+}
+
+/* ── COVER ── */
+.cover {
+  padding: 52px 50px 44px;
+  border-bottom: 1px solid var(--sep);
+  position: relative;
+}
+.cover::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--navy) 0%, var(--navy-soft) 60%, var(--block-deep) 100%);
+}
+.cover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 34px;
+}
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-icon {
+  width: 30px; height: 30px;
+  background: var(--navy);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--navy);
+}
+.doc-id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  color: var(--text-label);
+  letter-spacing: 0.06em;
+  padding-top: 5px;
+}
+.cover-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-ok);
+  margin-bottom: 12px;
+}
+.cover-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 29px;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+.cover-title span { font-weight: 300; color: var(--navy-soft); }
+.cover-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 300;
+  margin-bottom: 34px;
+}
+.cover-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--sep);
+  border: 1px solid var(--sep);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.meta-cell { background: white; padding: 13px 18px; }
+.meta-cell:nth-child(1),
+.meta-cell:nth-child(2) { background: #F4F8FC; }
+.meta-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-label);
+  margin-bottom: 3px;
+}
+.meta-value {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--navy);
+}
+
+/* ── BODY ── */
+.body-wrap { padding: 38px 50px 54px; }
+
+.section { margin-bottom: 42px; }
+.section + .section {
+  padding-top: 38px;
+  border-top: 1px solid var(--sep);
+}
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.section-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  color: var(--text-label);
+  letter-spacing: 0.1em;
+  min-width: 22px;
+}
+.section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--navy);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── EXEC CARD ── */
+.exec-card {
+  background: linear-gradient(160deg, #F7FBFF 0%, #EEF6FD 100%);
+  border-radius: 10px;
+  padding: 22px 24px;
+  border: 1px solid #D6E4F0;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.95) inset,
+    0 4px 14px rgba(44,100,160,0.05),
+    0 1px 4px rgba(44,100,160,0.03);
+}
+.compat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #D6E4F0;
+}
+.compat-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--navy-soft);
+}
+.compat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border: 1px solid #B0C8DE;
+  border-radius: 4px;
+  padding: 3px 10px 3px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--navy);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.compat-badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-warn);
+  display: inline-block;
+}
+.exec-body {
+  font-size: 12.5px;
+  line-height: 1.72;
+  color: var(--text-body);
+  margin-bottom: 14px;
+}
+.risk-inline {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: white;
+  border-radius: 6px;
+  padding: 10px 14px;
+  border: 1px solid rgba(207,174,93,0.25);
+  border-left: 3px solid var(--accent-warn);
+}
+.risk-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-warn);
+  padding-top: 2px;
+  white-space: nowrap;
+}
+.risk-text {
+  font-size: 12px;
+  color: var(--text-body);
+  line-height: 1.62;
+}
+
+/* ── BEHAVIOUR GRID ── */
+.behaviour-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--sep);
+  border: 1px solid #D4E2EE;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.95) inset,
+    0 6px 20px rgba(12,28,46,0.06),
+    0 2px 5px rgba(12,28,46,0.04);
+}
+.brow {
+  background: white;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+}
+.brow-label {
+  background: #F4F8FC;
+  padding: 13px 15px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--navy-soft);
+  border-right: 1px solid var(--sep);
+  display: flex;
+  align-items: flex-start;
+}
+.brow-body {
+  padding: 12px 17px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-body);
+}
+
+/* ── PRODUCT REALIZATION ── */
+.pr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--sep);
+  border: 1px solid #D4E2EE;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.95) inset,
+    0 6px 20px rgba(12,28,46,0.06),
+    0 2px 5px rgba(12,28,46,0.04);
+}
+.pr-cell { background: white; padding: 15px 18px; }
+.pr-cell-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-label);
+  margin-bottom: 5px;
+}
+.pr-cell-body {
+  font-size: 11.5px;
+  line-height: 1.68;
+  color: var(--text-body);
+}
+.implication-block {
+  background: var(--block-light);
+  border-radius: 8px;
+  padding: 13px 17px;
+  border: 1px solid #D4E2EE;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: flex-start;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 5px 18px rgba(12,28,46,0.06),
+    0 2px 5px rgba(12,28,46,0.04);
+}
+.impl-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--navy-soft);
+  white-space: nowrap;
+  padding-top: 2px;
+}
+.impl-text {
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-body);
+}
+
+/* ── FAILURE ANALYSIS ── */
+.failure-stack { display: flex; flex-direction: column; gap: 8px; }
+.failure-card {
+  border-radius: 7px;
+  padding: 14px 17px;
+  border: 1px solid var(--sep);
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 15px;
+  align-items: flex-start;
+}
+.failure-card.primary {
+  background: #FFFBF3;
+  border-color: #F0E2C2;
+  border-left: 3px solid var(--accent-warn);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 5px 18px rgba(180,140,50,0.06), 0 2px 5px rgba(0,0,0,0.03);
+}
+.failure-card.secondary {
+  background: #F8F7FD;
+  border-color: #E3E2F2;
+  border-left: 3px solid var(--accent-low);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 5px 18px rgba(100,90,170,0.06), 0 2px 5px rgba(0,0,0,0.03);
+}
+.failure-card.mechanism {
+  background: #F6F9FC;
+  border-color: #D4E2EE;
+  border-left: 3px solid var(--block-deep);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 5px 18px rgba(12,28,46,0.05), 0 2px 5px rgba(0,0,0,0.03);
+}
+.failure-type {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding-top: 2px;
+}
+.failure-card.primary   .failure-type { color: var(--accent-warn); }
+.failure-card.secondary .failure-type { color: var(--accent-low); }
+.failure-card.mechanism .failure-type { color: var(--navy-soft); }
+.failure-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.failure-body {
+  font-size: 11.5px;
+  line-height: 1.68;
+  color: var(--text-body);
+}
+
+/* ── QUALITY ASSESSMENT ── */
+.qa-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--sep);
+  border: 1px solid #D4E2EE;
+  border-bottom: none;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.95) inset;
+}
+.qa-cell { background: white; padding: 14px 18px; }
+.qa-cell-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-label);
+  margin-bottom: 6px;
+}
+.qa-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--navy);
+}
+.qa-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.qa-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-top: 5px;
+}
+.qa-deviations {
+  border: 1px solid #D4E2EE;
+  border-top: 1px solid var(--sep);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 6px 20px rgba(12,28,46,0.06), 0 2px 5px rgba(12,28,46,0.04);
+}
+.qa-dev-header {
+  background: #F4F8FC;
+  padding: 9px 18px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-label);
+  border-bottom: 1px solid var(--sep);
+}
+.qa-dev-list { list-style: none; padding: 10px 18px 14px; }
+.qa-dev-list li {
+  font-size: 11.5px;
+  color: var(--text-body);
+  line-height: 1.65;
+  padding: 4px 0;
+  display: flex;
+  gap: 10px;
+}
+.qa-dev-list li::before {
+  content: '—';
+  color: var(--text-label);
+  font-size: 10px;
+  padding-top: 1px;
+  flex-shrink: 0;
+}
+
+/* ── VISUALIZATION ── */
+.viz-block {
+  background: var(--block-light);
+  border: 1px solid #D4E2EE;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 6px 20px rgba(12,28,46,0.06),
+    0 2px 5px rgba(12,28,46,0.04);
+}
+.viz-header {
+  background: linear-gradient(90deg, var(--block-mid), var(--block-deep));
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--block-deep);
+}
+.viz-header-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--navy-soft);
+}
+.viz-body {
+  padding: 20px 22px;
+  font-size: 12px;
+  line-height: 1.78;
+  color: var(--text-body);
+}
+.viz-image {
+  width: 100%;
+  margin-bottom: 18px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #D4E2EE;
+  background: white;
+  box-shadow: 0 6px 20px rgba(12,28,46,0.08), 0 2px 6px rgba(12,28,46,0.04);
+  transition: transform 0.25s;
+}
+.viz-image:hover { transform: translateY(-3px); }
+.viz-image img { width: 100%; height: auto; display: block; }
+.viz-caption {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #9AA5B4;
+  margin-top: 6px;
+  margin-bottom: 14px;
+  text-align: right;
+  letter-spacing: 0.03em;
+}
+
+/* ── CLOSING ── */
+.closing-block {
+  background: #F6F9FC;
+  border: 1px solid #D4E2EE;
+  border-radius: 10px;
+  padding: 20px 22px;
+  display: grid;
+  grid-template-columns: 3px 1fr;
+  gap: 16px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 5px 18px rgba(12,28,46,0.05),
+    0 2px 5px rgba(12,28,46,0.03);
+}
+.closing-accent { background: var(--navy-soft); border-radius: 2px; }
+.closing-text {
+  font-size: 11.5px;
+  line-height: 1.78;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── FOOTER ── */
+.page-footer {
+  padding: 15px 50px;
+  border-top: 1px solid var(--sep);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #F8FAFC;
+}
+.footer-brand {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-label);
+}
+.footer-note { font-size: 10px; color: var(--text-label); }
+
+/* ── Next Step / Support Scope ── */
+.nextstep-card {
+  background: #FFFFFF;
+  border: 1px solid #D4E2EE;
+  border-radius: 10px;
+  padding: 20px 22px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.95) inset,
+    0 8px 24px rgba(12,28,46,0.07),
+    0 2px 6px rgba(12,28,46,0.05);
+}
+
+.nextstep-lead {
+  font-size: 12px;
+  line-height: 1.74;
+  color: var(--text-body);
+  margin-bottom: 14px;
+}
+
+.nextstep-path {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sep);
+}
+
+.nextstep-path-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-label);
+  margin-bottom: 8px;
+}
+
+.nextstep-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nextstep-list li {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 5px 0;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--text-body);
+}
+
+.nextstep-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--navy-soft);
+  padding-top: 1px;
+}
+
+.support-card {
+  background: linear-gradient(160deg, #F7FBFF 0%, #EEF5FB 100%);
+  border: 1px solid #D6E4F0;
+  border-radius: 10px;
+  padding: 20px 22px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.95) inset,
+    0 6px 20px rgba(12,28,46,0.06),
+    0 2px 5px rgba(12,28,46,0.04);
+}
+
+.support-body {
+  font-size: 12px;
+  line-height: 1.74;
+  color: var(--text-body);
+  margin-bottom: 14px;
+}
+
+.support-stages {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: #D6E4F0;
+  border: 1px solid #D6E4F0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+
+.support-stage {
+  background: #FFFFFF;
+  padding: 12px 14px;
+}
+
+.support-stage-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-label);
+  margin-bottom: 6px;
+}
+
+.support-stage-text {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-body);
+}
+
+@media print {
+  body { background: white; }
+  .page { margin: 0; box-shadow: none; }
+}
+
+/* =========================================================
+   FAIRVIA PDF PRINT STABILITY PATCH
+   Purpose:
+   - prevent section/card splitting across PDF pages
+   - remove unwanted page-break shadow artifacts
+   - keep existing visual design and positioning intact
+========================================================= */
+
+@media print {
+  html, body {
+    background: #ffffff !important;
+  }
+
+  .page {
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+
+  .section,
+  .exec-card,
+  .behaviour-grid,
+  .brow,
+  .pr-grid,
+  .pr-cell,
+  .implication-block,
+  .failure-stack,
+  .failure-card,
+  .qa-top,
+  .qa-cell,
+  .qa-deviations,
+  .viz-card,
+  .nextstep-card,
+  .nextstep-path,
+  .support-card,
+  .support-stages,
+  .closing-block {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .section-header {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Keep Product Realization together as much as possible */
+  .pr-grid,
+  .implication-block {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Prevent grey overlay-like artifacts at page boundaries */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+
+/* =========================================================
+   FAIRVIA VISUAL RESTORE PATCH
+   Restore dynamic visual-base overlay and remove unwanted grey shadows.
+========================================================= */
+
+.visual-restore-wrap {
+  width: 100%;
+  margin: 10px auto 4px;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  border: none !important;
+  overflow: visible !important;
+}
+
+.conceptual-note {
+  font-size: 9.5px;
+  color: var(--text-muted);
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+@media print {
+  .visual-restore-wrap,
+  .section,
+  .exec-card,
+  .behaviour-grid,
+  .pr-grid,
+  .implication-block,
+  .failure-card,
+  .qa-top,
+  .qa-deviations,
+  .nextstep-card,
+  .support-card,
+  .closing-block {
+    box-shadow: none !important;
+  }
+
+  .visual-restore-wrap {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+
+.graph-static-wrap {
+  width: 100%;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  border: none !important;
+  overflow: hidden !important;
+  margin: 8px auto 0;
+}
+
+.graph-static-image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+
+.qa-chart-card {
+  margin-top: 16px;
+  border: 1px solid var(--sep);
+  border-radius: 14px;
+  background: #ffffff;
+  overflow: hidden;
+}
+.qa-chart-inner {
+  padding: 18px 20px 16px;
+}
+.score-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 28px;
+  height: 175px;
+}
+.score-col {
+  width: 78px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.score-value {
+  font-size: 15px;
+  line-height: 1;
+  color: var(--navy);
+  margin-bottom: 10px;
+}
+.score-stick {
+  width: 46px;
+  border-radius: 10px 10px 0 0;
+  background: #9EB0BF;
+}
+.score-stick.flow {
+  background: #C97B73;
+}
+.score-name {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.conceptual-section {
+  page-break-before: always;
+}
+
+
+/* =========================================================
+   FAIRVIA PARAMETER PROFILE FINAL
+   - clean horizontal score bars
+   - not inside conceptual visual
+========================================================= */
+
+.qa-chart-card {
+  margin-top: 14px !important;
+  border: 1px solid var(--sep) !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+
+.qa-chart-inner {
+  padding: 16px 18px 16px !important;
+}
+
+.score-profile {
+  width: 100% !important;
+  max-width: 560px !important;
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.score-profile-row {
+  display: grid !important;
+  grid-template-columns: 120px 1fr 42px !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.score-profile-label {
+  font-size: 11px !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: var(--text-muted) !important;
+}
+
+.score-profile-track {
+  height: 9px !important;
+  border-radius: 999px !important;
+  background: #edf2f6 !important;
+  overflow: hidden !important;
+}
+
+.score-profile-fill {
+  height: 100% !important;
+  border-radius: 999px !important;
+  background: #9eb0bf !important;
+}
+
+.score-profile-fill.flow {
+  background: #c97b73 !important;
+}
+
+.score-profile-value {
+  font-size: 13px !important;
+  color: var(--navy) !important;
+  text-align: right !important;
+}
+
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-header">
+      <div class="brand-mark">
+        <div class="brand-icon">
+          <svg viewBox="0 0 18 18" fill="none" width="18" height="18">
+            <path d="M3 14 L9 4 L15 14" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 10.5 H12" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="brand-name">FairVia™</span>
+      </div>
+      <span class="doc-id">FV-THR-2025-001 · CONFIDENTIAL</span>
+    </div>
+    <div class="cover-eyebrow">Technical Assessment Document</div>
+    <div class="cover-title">FairVia™ <span>Technical<br>Hypothesis Report</span></div>
+    <div class="cover-subtitle">Material feasibility assessment for pre-commercial transition planning</div>
+    <div class="cover-meta-grid">
+      <div class="meta-cell">
+        <div class="meta-label">Application</div>
+        <div class="meta-value">{{application}}</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">Material Transition</div>
+        <div class="meta-value">{{material_transition}}</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">Assessment Type</div>
+        <div class="meta-value">{{assessment_type}}</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">Date</div>
+        <div class="meta-value">{{report_date}}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body-wrap">
+
+    <!-- 01 Executive Summary -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <span class="section-title">Executive Summary</span>
+      </div>
+      <div class="exec-card">
+        <div class="compat-row">
+          <span class="compat-label">Compatibility Level</span>
+          <span class="compat-badge">{{compatibility_level}}</span>
+        </div>
+        <p class="exec-body">{{executive_summary}}</p>
+        <div class="risk-inline">
+          <span class="risk-tag">Key Risk</span>
+          <span class="risk-text">{{key_risk}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 Processing Behaviour -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <span class="section-title">Processing Behaviour</span>
+      </div>
+      <div class="behaviour-grid">
+        <div class="brow">
+          <div class="brow-label">Processing Window</div>
+          <div class="brow-body">{{processing_window}}</div>
+        </div>
+        <div class="brow">
+          <div class="brow-label">Thermal Behaviour</div>
+          <div class="brow-body">{{thermal_behavior}}</div>
+        </div>
+        <div class="brow">
+          <div class="brow-label">Flow Characteristics</div>
+          <div class="brow-body">{{flow_characteristics}}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 Product Realization -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <span class="section-title">Product Realization</span>
+      </div>
+      <div class="pr-grid">
+        <div class="pr-cell">
+          <div class="pr-cell-label">Mechanical Behaviour</div>
+          <div class="pr-cell-body">{{mechanical_behavior}}</div>
+        </div>
+        <div class="pr-cell">
+          <div class="pr-cell-label">Surface Quality</div>
+          <div class="pr-cell-body">{{surface_quality}}</div>
+        </div>
+        <div class="pr-cell">
+          <div class="pr-cell-label">Structural Consistency</div>
+          <div class="pr-cell-body">{{structural_consistency}}</div>
+        </div>
+        <div class="pr-cell" style="background:#F5F8FB;">
+          <div class="pr-cell-label" style="color:var(--navy-soft);">Assessment Scope</div>
+          <div class="pr-cell-body" style="color:var(--text-muted);font-size:11px;">All three parameters are evaluated under controlled pilot conditions. Real-world variability is expected to exceed laboratory baseline figures.</div>
+        </div>
+      </div>
+      <div class="implication-block">
+        <span class="impl-tag">Application<br>Implication</span>
+        <span class="impl-text">{{application_implication}}</span>
+      </div>
+    </div>
+
+    <!-- 04 Failure Analysis -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <span class="section-title">Failure Analysis</span>
+      </div>
+      <div class="failure-stack">
+        <div class="failure-card primary">
+          <div class="failure-type">Primary Risk</div>
+          <div>
+            <div class="failure-label">{{primary_risk_title}}</div>
+            <div class="failure-body">{{primary_risk}}</div>
+          </div>
+        </div>
+        <div class="failure-card secondary">
+          <div class="failure-type">Secondary Risk</div>
+          <div>
+            <div class="failure-label">{{secondary_risk_title}}</div>
+            <div class="failure-body">{{secondary_risk}}</div>
+          </div>
+        </div>
+        <div class="failure-card mechanism">
+          <div class="failure-type">Mechanism</div>
+          <div>
+            <div class="failure-body">{{mechanism}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 Quality Assessment -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <span class="section-title">Quality Assessment</span>
+      </div>
+      <div class="qa-top">
+        <div class="qa-cell">
+          <div class="qa-cell-label">Stability</div>
+          <div class="qa-rating">
+            <span class="qa-dot" style="background:#CFAE5D;"></span>
+            {{stability}}
+          </div>
+          <div class="qa-note">{{stability_note}}</div>
+        </div>
+        <div class="qa-cell" style="border-left:1px solid var(--sep);">
+          <div class="qa-cell-label">Consistency</div>
+          <div class="qa-rating">
+            <span class="qa-dot" style="background:#CFAE5D;"></span>
+            {{consistency}}
+          </div>
+          <div class="qa-note">{{consistency_note}}</div>
+        </div>
+      </div>
+      <div class="qa-deviations">
+        <div class="qa-dev-header">Expected Deviations</div>
+        <ul class="qa-dev-list">
+          {{expected_deviations}}
+        </ul>
+        <div class="qa-chart-card">
+          <div class="qa-dev-header">Parameter Profile</div>
+          <div class="qa-chart-inner">
+            {{score_bars_html}}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06 Conceptual Visualization -->
+    <div class="section conceptual-section">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <span class="section-title">Conceptual Processing Comparison</span>
+      </div>
+
+      <div class="conceptual-note">
+        Illustrative comparison only. Temperature values and scores are conceptual indicators of relative processing tolerance, not recommended operating conditions.
+      </div>
+
+      <div class="visual-restore-wrap">
+        {{dynamic_overlay}}
+      </div>
+    </div>
+
+    <!-- 07 Recommended Next Step -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <span class="section-title">Recommended Next Step</span>
+      </div>
+      <div class="nextstep-card">
+        <p class="nextstep-lead">{{next_step}}</p>
+
+        <div class="nextstep-path">
+          <div class="nextstep-path-label">Recommended Pathway</div>
+          <ul class="nextstep-list">
+            <li>
+              <span class="nextstep-num">01</span>
+              <span>Technical hypothesis screening</span>
+            </li>
+            <li>
+              <span class="nextstep-num">02</span>
+              <span>Engineering compatibility assessment</span>
+            </li>
+            <li>
+              <span class="nextstep-num">03</span>
+              <span>Controlled pilot validation</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 08 FairVia Support Scope -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <span class="section-title">FairVia Support Scope</span>
+      </div>
+      <div class="support-card">
+        <p class="support-body">
+          FairVia supports material transition projects through a staged technical process, from early feasibility evaluation to pilot validation planning.
+        </p>
+        <p class="support-body">
+          This report represents the first stage of that process. Where the identified risks are judged to be commercially relevant but technically manageable, the next phase should focus on engineering compatibility assessment and pilot preparation.
+        </p>
+
+        <div class="support-stages">
+          <div class="support-stage">
+            <div class="support-stage-label">Stage 01</div>
+            <div class="support-stage-text">Feasibility screening and technical hypothesis development</div>
+          </div>
+          <div class="support-stage">
+            <div class="support-stage-label">Stage 02</div>
+            <div class="support-stage-text">Engineering compatibility review and structured assessment</div>
+          </div>
+          <div class="support-stage">
+            <div class="support-stage-label">Stage 03</div>
+            <div class="support-stage-text">Pilot validation planning and implementation support</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 09 Closing Note -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <span class="section-title">Closing Note</span>
+      </div>
+      <div class="closing-block">
+        <div class="closing-accent"></div>
+        <p class="closing-text">
+          This report is based on a hypothesis-driven evaluation using the declared input parameters. All conclusions remain indicative until confirmed through physical trials and material testing.
+          <br><br>
+          The findings in this report are intended to support structured technical decision-making prior to commercial implementation.
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /body-wrap -->
+
+  <!-- FOOTER -->
+  <div class="page-footer">
+    <span class="footer-brand">FairVia™ · Il Nautico Co., Ltd.</span>
+    <span class="footer-note">Hypothesis Report · Pre-Commercial Assessment · Not for Distribution</span>
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>

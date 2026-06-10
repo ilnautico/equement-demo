@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FairVia™ | Secure Diagnostic Form</title>
+  <style>
+    :root {
+      --ink: #173766;
+      --ink-soft: #425f82;
+      --ink-muted: #748dad;
+      --blue: #2952a3;
+      --blue-2: #2f65c8;
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --line: rgba(23,55,102,0.12);
+      --line-soft: rgba(23,55,102,0.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(var(--line-soft) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line-soft) 1px, transparent 1px),
+        var(--bg);
+      background-size: 42px 42px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      min-height: 100vh;
+      padding: 34px 18px 54px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 18px;
+      padding: 28px 30px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.94);
+      box-shadow: 0 14px 34px rgba(23,55,102,0.08);
+    }
+
+    .eyebrow {
+      margin-bottom: 8px;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: clamp(26px, 4vw, 38px);
+      line-height: 1.15;
+      font-weight: 650;
+    }
+
+    .lead {
+      max-width: 760px;
+      color: var(--ink-soft);
+      font-size: 14.5px;
+    }
+
+    form {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 14px 34px rgba(23,55,102,0.08);
+    }
+
+    .section {
+      padding: 22px 28px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .section:last-child { border-bottom: none; }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .section-title span {
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: #eef5ff;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px 16px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      color: var(--ink);
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .required { color: #c44636; }
+
+    input, select, textarea {
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid rgba(23,55,102,0.16);
+      border-radius: 9px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(41,82,163,0.10);
+    }
+
+    .hint {
+      color: var(--ink-muted);
+      font-size: 11.5px;
+      line-height: 1.45;
+    }
+
+    .submit-area {
+      padding: 24px 28px;
+      background: #f8fafd;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 24px;
+      border: 0;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #244f9f 0%, #2f65c8 100%);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(36,79,159,0.22);
+    }
+
+    .btn:disabled {
+      opacity: .62;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .status {
+      margin-top: 14px;
+      color: var(--ink-soft);
+      font-size: 13.5px;
+    }
+
+    @media (max-width: 720px) {
+      .page { padding: 20px 12px 40px; }
+      .header, .section, .submit-area { padding: 22px 18px; }
+      .grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="wrap">
+      <header class="header">
+        <div class="eyebrow">FairVia™ Secure Diagnostic Form</div>
+        <h1>Equipment Compatibility Assessment</h1>
+        <p class="lead">
+          Please complete the technical intake form below. Your submission will be processed through the FairVia™ diagnostic system, and your Technical Hypothesis Report will be delivered by email as a PDF.
+        </p>
+      </header>
+
+      <form id="fairvia-form">
+        <input type="hidden" name="access_token" id="access_token" />
+
+        <section class="section">
+          <div class="section-title"><span>1</span>Contact Information</div>
+          <div class="grid">
+            <div class="field">
+              <label>Company name <span class="required">*</span></label>
+              <input name="company_name" required placeholder="Company name" />
+            </div>
+            <div class="field">
+              <label>Contact person <span class="required">*</span></label>
+              <input name="contact_person" required placeholder="Your name" />
+            </div>
+            <div class="field full">
+              <label>Email address <span class="required">*</span></label>
+              <input name="email" type="email" required placeholder="name@company.com" />
+              <div class="hint">Your PDF report and download link will be sent to this email address.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><span>2</span>Product Overview</div>
+          <div class="grid">
+            <div class="field">
+              <label>Project stage</label>
+              <select name="project_stage">
+                <option value="">Select one</option>
+                <option value="Early investigation">Early investigation</option>
+                <option value="Pre-commercial validation">Pre-commercial validation</option>
+                <option value="Pilot preparation">Pilot preparation</option>
+                <option value="Commercial production review">Commercial production review</option>
+                <option value="Not specified">Not specified</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Product type <span class="required">*</span></label>
+              <input name="product_type" required placeholder="film pouch / rigid tray / container" />
+            </div>
+            <div class="field full">
+              <label>Application <span class="required">*</span></label>
+              <input name="application" required placeholder="frozen food packaging / hot-fill use / shopping bag" />
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><span>3</span>Current Setup</div>
+          <div class="grid">
+            <div class="field">
+              <label>Current material <span class="required">*</span></label>
+              <input name="material" required placeholder="PP / PET / LDPE" />
+            </div>
+            <div class="field">
+              <label>Processing method <span class="required">*</span></label>
+              <select name="processing" required>
+                <option value="">Select one</option>
+                <option value="Blown film extrusion">Blown film extrusion</option>
+                <option value="Cast film extrusion">Cast film extrusion</option>
+                <option value="Injection molding">Injection molding</option>
+                <option value="Thermoforming">Thermoforming</option>
+                <option value="Blow molding">Blow molding</option>
+                <option value="Other / Not sure">Other / Not sure</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label>Equipment type <span class="required">*</span></label>
+              <input name="equipment" required placeholder="blown film line / injection molding line" />
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><span>4</span>Transition Goal</div>
+          <div class="grid">
+            <div class="field full">
+              <label>Target biodegradable material</label>
+              <input name="bio_material" placeholder="PLA / PHA-based compound / PBAT blend" />
+              <div class="hint">If you do not have a candidate material yet, you may leave this blank.</div>
+            </div>
+            <div class="field">
+              <label>Why are you considering this transition?</label>
+              <select name="transition_goal">
+                <option value="">Select one</option>
+                <option value="Sustainability goals">Sustainability goals</option>
+                <option value="Regulatory compliance">Regulatory compliance</option>
+                <option value="Customer request">Customer request</option>
+                <option value="Branding / market positioning">Branding / market positioning</option>
+                <option value="Cost exploration">Cost exploration</option>
+                <option value="Not sure yet">Not sure yet</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Main technical concern <span class="required">*</span></label>
+              <input name="concern" required placeholder="heat resistance / flow stability / seal strength" />
+            </div>
+            <div class="field full">
+              <label>Known issues with the current product or process</label>
+              <textarea name="issues" placeholder="warpage, unstable sealing, thickness variation, poor output consistency"></textarea>
+            </div>
+            <div class="field full">
+              <label>Additional notes</label>
+              <textarea name="notes" placeholder="no equipment modification preferred, high-speed production, hot-fill use"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><span>5</span>Optional Technical Details</div>
+          <div class="grid">
+            <div class="field">
+              <label>Screw diameter</label>
+              <input name="screw_diameter" placeholder="Example: 65 mm" />
+            </div>
+            <div class="field">
+              <label>L/D ratio</label>
+              <input name="ld_ratio" placeholder="Example: 28:1" />
+            </div>
+            <div class="field full">
+              <label>Die / mold information</label>
+              <input name="die_mold" placeholder="flat die / 3-layer die / cavity mold" />
+            </div>
+            <div class="field">
+              <label>What matters most for this product?</label>
+              <select name="requirement_focus">
+                <option value="">Select one</option>
+                <option value="VISUAL">Visual appearance</option>
+                <option value="ENVIRONMENT">Environmental condition</option>
+                <option value="PRODUCT_STABILITY">Product stability</option>
+                <option value="MECHANICAL">Mechanical performance</option>
+                <option value="NOT_SURE">Not sure</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Which area is most critical?</label>
+              <select name="risk_focus">
+                <option value="">Select one</option>
+                <option value="PROCESSING_STABILITY">Processing stability</option>
+                <option value="THERMAL_RESISTANCE">Thermal resistance</option>
+                <option value="DIMENSIONAL_ACCURACY">Dimensional accuracy</option>
+                <option value="SURFACE_QUALITY">Surface quality</option>
+                <option value="SEAL_PERFORMANCE">Seal performance</option>
+                <option value="NOT_SURE">Not sure</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <div class="submit-area">
+          <button id="submit-btn" class="btn" type="submit">Generate Technical Hypothesis Report</button>
+          <div id="status" class="status"></div>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const token = new URLSearchParams(window.location.search).get("token") || "";
+    document.getElementById("access_token").value = token;
+
+    const form = document.getElementById("fairvia-form");
+    const button = document.getElementById("submit-btn");
+    const statusEl = document.getElementById("status");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      button.disabled = true;
+      statusEl.textContent = "Generating your report. Please wait...";
+
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch("/generate-report?delivery=email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(result && (result.detail || result.error) ? (result.detail || result.error) : "Report generation failed.");
+        }
+
+        statusEl.textContent = "Your report has been generated and sent by email.";
+
+        setTimeout(() => {
+          window.location.href = "https://fairvia-assessment.netlify.app/report-ready";
+        }, 900);
+
+      } catch (error) {
+        console.error(error);
+        statusEl.textContent = "Report generation failed. Please contact FairVia support.";
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
