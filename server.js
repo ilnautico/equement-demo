@@ -9,10 +9,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-function isValidDemoToken(token) {
-  const expected = process.env.EQUIPMENT_DEMO_TOKEN || "FVE-DEMO-2026";
-  return Boolean(token && token === expected);
-}
+
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
@@ -99,6 +96,156 @@ function looksLikeMaterial(value) {
   const v = String(value || "").toLowerCase();
   return /\b(ldpe|lldpe|hdpe|pp|pet|ps|pla|pbat|pha|pe)\b/.test(v);
 }
+
+
+// =========================================================
+// RELEASE ACCESS CONTROL: one-assessment token system
+// Initial assessment: one use only
+// Feedback bonus: issue a separate token for one additional assessment
+// =========================================================
+
+const EQUIPMENT_DEMO_TOKEN_REGISTRY = new Map();
+
+function registerEquipmentDemoToken(token, meta = {}) {
+  if (!token) return;
+  EQUIPMENT_DEMO_TOKEN_REGISTRY.set(String(token).trim(), {
+    token: String(token).trim(),
+    maxUses: Number(meta.maxUses || 1),
+    usedCount: 0,
+    type: meta.type || "initial",
+    company: meta.company || "",
+    createdAt: new Date().toISOString()
+  });
+}
+
+// Current shared token kept for immediate release continuity.
+// New customer-specific tokens should be sent by email individually.
+[
+  "FVE-ILN-202606-EQ01",
+  "FVE-ILN-202606-EQ02",
+  "FVE-ILN-202606-EQ03",
+  "FVE-ILN-202606-EQ04",
+  "FVE-ILN-202606-EQ05",
+  "FVE-ILN-202606-EQ06",
+  "FVE-ILN-202606-EQ07",
+  "FVE-ILN-202606-EQ08",
+  "FVE-ILN-202606-EQ09",
+  "FVE-ILN-202606-EQ10",
+  "FVE-ILN-202606-EQ11",
+  "FVE-ILN-202606-EQ12",
+  "FVE-ILN-202606-EQ13",
+  "FVE-ILN-202606-EQ14",
+  "FVE-ILN-202606-EQ15",
+  "FVE-ILN-202606-EQ16",
+  "FVE-ILN-202606-EQ17",
+  "FVE-ILN-202606-EQ18",
+  "FVE-ILN-202606-EQ19",
+  "FVE-ILN-202606-EQ20"
+].forEach((token, index) => registerEquipmentDemoToken(token, {
+  type: "initial",
+  company: `Initial demo ${index + 1}`,
+  maxUses: 1
+}));
+
+[
+  "FVE-ILN-202606-FB01",
+  "FVE-ILN-202606-FB02",
+  "FVE-ILN-202606-FB03",
+  "FVE-ILN-202606-FB04",
+  "FVE-ILN-202606-FB05",
+  "FVE-ILN-202606-FB06",
+  "FVE-ILN-202606-FB07",
+  "FVE-ILN-202606-FB08",
+  "FVE-ILN-202606-FB09",
+  "FVE-ILN-202606-FB10"
+].forEach((token, index) => registerEquipmentDemoToken(token, {
+  type: "feedback_bonus",
+  company: `Feedback bonus ${index + 1}`,
+  maxUses: 1
+}));
+
+if (process.env.EQUIPMENT_DEMO_TOKEN) {
+  registerEquipmentDemoToken(process.env.EQUIPMENT_DEMO_TOKEN, {
+    type: "initial_env",
+    company: "Environment token",
+    maxUses: 1
+  });
+}
+
+function extractEquipmentDemoToken(req) {
+  const direct =
+    req.query?.token ||
+    req.body?.token ||
+    req.headers?.["x-demo-token"] ||
+    req.headers?.["x-equipment-demo-token"];
+
+  if (direct) return String(direct).trim();
+
+  const referer = req.headers?.referer || req.headers?.referrer;
+  if (referer) {
+    try {
+      const url = new URL(referer);
+      return String(url.searchParams.get("token") || "").trim();
+    } catch (_) {
+      return "";
+    }
+  }
+
+  return "";
+}
+
+function isInternalAutofillTest(req) {
+  const referer = req.headers?.referer || req.headers?.referrer || "";
+  try {
+    const url = new URL(referer);
+    return Boolean(url.searchParams.get("test"));
+  } catch (_) {
+    return false;
+  }
+}
+
+function getEquipmentDemoTokenRecord(token) {
+  if (!token) return null;
+  return EQUIPMENT_DEMO_TOKEN_REGISTRY.get(String(token).trim()) || null;
+}
+
+function isValidDemoToken(token) {
+  const record = getEquipmentDemoTokenRecord(token);
+  if (!record) return false;
+  return record.usedCount < record.maxUses;
+}
+
+function consumeEquipmentDemoToken(req) {
+  // Internal test URLs with &test=1..5 should not consume customer tokens.
+  if (isInternalAutofillTest(req)) {
+    return { ok: true, skipped: true, reason: "internal_test" };
+  }
+
+  const token = extractEquipmentDemoToken(req);
+  const record = getEquipmentDemoTokenRecord(token);
+
+  if (!record) {
+    return {
+      ok: false,
+      status: 403,
+      message: "Invalid or missing demo access. Please request a new assessment access link."
+    };
+  }
+
+  if (record.usedCount >= record.maxUses) {
+    return {
+      ok: false,
+      status: 410,
+      message: "This assessment access has already been used. Please request another assessment access if needed."
+    };
+  }
+
+  record.usedCount += 1;
+  record.usedAt = new Date().toISOString();
+
+  return { ok: true, token, record };
+}
+
 
 function normalizeEquipmentFormPayload(raw = {}) {
   const productType = pickFirst(raw, [
@@ -957,6 +1104,13 @@ try {
     const input = normalizeInput(req.body);
 
     // --- Deterministic engine ---
+    const tokenUse = consumeEquipmentDemoToken(req);
+    if (!tokenUse.ok) {
+      return res.status(tokenUse.status || 403).json({
+        error: tokenUse.message
+      });
+    }
+
     const scores     = applyEquipmentRiskPenalties(calculateScores(input), input);
     const constraint = getConstraint(scores);
     const decision   = determineDecision(scores.total);
