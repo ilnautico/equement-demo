@@ -1,3 +1,4 @@
+const nodeCrypto = require("node:crypto");
 import express from "express";
 import puppeteer from "puppeteer";
 import fs from "fs";
@@ -1343,7 +1344,7 @@ function hashAccessKey(plainKey) {
 }
 
 function generatePlainAccessKey() {
-  const randomPart = crypto.randomBytes(18).toString("base64url").toUpperCase();
+  const randomPart = nodeCrypto.randomBytes(18).toString("base64url").toUpperCase();
   return `FV-${randomPart}`;
 }
 
