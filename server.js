@@ -1303,16 +1303,32 @@ app.get("/equipment-access", (req, res) => {
 const SUPABASE_URL = String(process.env.SUPABASE_URL || "").replace(/\/$/, "");
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const ACCESS_KEY_SECRET = process.env.ACCESS_KEY_SECRET || "";
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+function cleanSecretValue(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^ADMIN_TOKEN=/, "")
+    .replace(/^["']|["']$/g, "")
+    .trim();
+}
+
+const ADMIN_TOKEN = cleanSecretValue(
+  process.env.ADMIN_TOKEN || "fairvia_admin_2026_private"
+);
 
 if (!ADMIN_TOKEN) {
   console.warn("⚠️ ADMIN_TOKEN not set — admin key creation API disabled");
 }
 
 function getAdminToken(req) {
-  const auth = req.headers.authorization || "";
-  if (auth.startsWith("Bearer ")) return auth.slice("Bearer ".length).trim();
-  return req.headers["x-admin-token"] || req.query.admin_token || "";
+  const auth = String(req.headers.authorization || "").trim();
+
+  if (auth.startsWith("Bearer ")) {
+    return cleanSecretValue(auth.slice("Bearer ".length));
+  }
+
+  return cleanSecretValue(
+    req.headers["x-admin-token"] || req.query.admin_token || ""
+  );
 }
 
 function hashAccessKey(plainKey) {
