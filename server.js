@@ -1,4 +1,4 @@
-const nodeCrypto = require("node:crypto");
+import { randomBytes, createHash } from "node:crypto";
 import express from "express";
 import puppeteer from "puppeteer";
 import fs from "fs";
@@ -1074,44 +1074,44 @@ function generateOverlay(scores) {
 // ══════════════════════════════════════════════════════════════
 
 app.post("/generate-report", async (req, res) => {
-  
-  const input = normalizeEquipmentFormPayload(req.body || {});
-
-// Emergency release correction:
-// If the form sends material text into application, correct it before scoring/report rendering.
-if (looksLikeMaterial(input.application)) {
-  const originalApplicationValue = input.application;
-
-  input.current_material = input.current_material || input.material || originalApplicationValue;
-  input.material = input.current_material;
-
-  input.application =
-    input.product_type ||
-    input.productType ||
-    input.product ||
-    input.product_application ||
-    input.productApplication ||
-    "Dry goods packaging film / shopping bag";
-}
-
-// Ensure risk penalty logic sees all submitted values.
-input._risk_context = Object.values(input)
-  .filter(v => v !== undefined && v !== null)
-  .map(v => String(v))
-  .join(" | ");
-try {
+  try {
     console.log("RAW BODY:", JSON.stringify(req.body, null, 2));
 
-    const input = normalizeInput(req.body);
+    const normalizedRaw = normalizeInput(req.body || {});
+    const input = normalizeEquipmentFormPayload(normalizedRaw);
 
-    // --- Deterministic engine ---
-    const tokenUse = consumeEquipmentDemoToken(req);
+    // Emergency release correction:
+    // If the form sends material text into application, correct it before scoring/report rendering.
+    if (looksLikeMaterial(input.application)) {
+      const originalApplicationValue = input.application;
+
+      input.current_material = input.current_material || input.material || originalApplicationValue;
+      input.material = input.current_material;
+
+      input.application =
+        input.product_type ||
+        input.productType ||
+        input.product ||
+        input.product_application ||
+        input.productApplication ||
+        "Dry goods packaging film / shopping bag";
+    }
+
+    // Ensure risk penalty logic sees all submitted values.
+    input._risk_context = Object.values(input)
+      .filter(v => v !== undefined && v !== null)
+      .map(v => String(v))
+      .join(" | ");
+
+    // --- Access control ---
+    const tokenUse = await consumeEquipmentAccess(req);
     if (!tokenUse.ok) {
       return res.status(tokenUse.status || 403).json({
-        error: tokenUse.message
+        error: tokenUse.message || "Invalid or expired assessment access."
       });
     }
 
+    // --- Deterministic engine ---
     const scores     = applyEquipmentRiskPenalties(calculateScores(input), input);
     const constraint = getConstraint(scores);
     const decision   = determineDecision(scores.total);
@@ -1234,10 +1234,12 @@ app.get("/report-ready", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "report-ready.html"));
 });
 
-app.get("/equipment-access", (req, res) => {
+app.get("/equipment-access", async (req, res) => {
   const token = String(req.query.token || "");
-  if (!isValidDemoToken(token)) {
-    return res.status(403).send(`
+  const accessCheck = await checkEquipmentAccess(token);
+
+  if (!accessCheck.ok) {
+    return res.status(accessCheck.status || 403).send(`
       <!doctype html>
       <html>
         <head>
@@ -1337,14 +1339,13 @@ function hashAccessKey(plainKey) {
     throw new Error("ACCESS_KEY_SECRET is not configured");
   }
 
-  return crypto
-    .createHash("sha256")
+  return createHash("sha256")
     .update(`${ACCESS_KEY_SECRET}:${plainKey}`)
     .digest("hex");
 }
 
 function generatePlainAccessKey() {
-  const randomPart = nodeCrypto.randomBytes(18).toString("base64url").toUpperCase();
+  const randomPart = randomBytes(18).toString("base64url").toUpperCase();
   return `FV-${randomPart}`;
 }
 
@@ -1394,6 +1395,145 @@ async function supabaseFetch(pathname, options = {}) {
   }
 
   return data;
+}
+
+
+async function getSupabaseAccessRecord(plainKey) {
+  if (!plainKey || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !ACCESS_KEY_SECRET) {
+    return null;
+  }
+
+  const accessKeyHash = hashAccessKey(plainKey);
+  const rows = await supabaseFetch(
+    `/rest/v1/assessment_access_keys?access_key_hash=eq.${encodeURIComponent(accessKeyHash)}&select=*`,
+    { method: "GET" }
+  );
+
+  if (!Array.isArray(rows) || rows.length === 0) return null;
+  return rows[0];
+}
+
+function evaluateSupabaseAccessRecord(row) {
+  if (!row) {
+    return {
+      ok: false,
+      status: 403,
+      message: "Invalid or missing assessment access. Please request a new assessment access link."
+    };
+  }
+
+  if (row.status && row.status !== "active") {
+    return {
+      ok: false,
+      status: 403,
+      message: "This assessment access is not active."
+    };
+  }
+
+  if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) {
+    return {
+      ok: false,
+      status: 410,
+      message: "This assessment access has expired. Please request a new assessment access link."
+    };
+  }
+
+  const usedCount = Number(row.used_count || 0);
+  const maxUses = Number(row.max_uses || 1);
+
+  if (usedCount >= maxUses) {
+    return {
+      ok: false,
+      status: 410,
+      message: "This assessment access has already been used. Please request another assessment access if needed."
+    };
+  }
+
+  return { ok: true, record: row, usedCount, maxUses };
+}
+
+async function checkSupabaseAccess(plainKey) {
+  try {
+    const row = await getSupabaseAccessRecord(plainKey);
+    return evaluateSupabaseAccessRecord(row);
+  } catch (err) {
+    console.error("[Access Check ERROR]", err);
+    return {
+      ok: false,
+      status: 500,
+      message: "Assessment access could not be verified. Please try again later."
+    };
+  }
+}
+
+async function consumeSupabaseAccess(plainKey) {
+  try {
+    const row = await getSupabaseAccessRecord(plainKey);
+    const evaluation = evaluateSupabaseAccessRecord(row);
+
+    if (!evaluation.ok) return evaluation;
+
+    const nextUsedCount = evaluation.usedCount + 1;
+
+    const updated = await supabaseFetch(
+      `/rest/v1/assessment_access_keys?access_key_hash=eq.${encodeURIComponent(hashAccessKey(plainKey))}`,
+      {
+        method: "PATCH",
+        headers: {
+          Prefer: "return=representation",
+        },
+        body: JSON.stringify({
+          used_count: nextUsedCount,
+        }),
+      }
+    );
+
+    return {
+      ok: true,
+      token: plainKey,
+      record: Array.isArray(updated) && updated[0] ? updated[0] : row,
+      source: "supabase",
+    };
+  } catch (err) {
+    console.error("[Access Consume ERROR]", err);
+    return {
+      ok: false,
+      status: 500,
+      message: "Assessment access could not be consumed. Please try again later."
+    };
+  }
+}
+
+async function checkEquipmentAccess(token) {
+  if (!token) {
+    return {
+      ok: false,
+      status: 403,
+      message: "Invalid or missing assessment access. Please request a new assessment access link."
+    };
+  }
+
+  if (isValidDemoToken(token)) {
+    return { ok: true, source: "memory" };
+  }
+
+  return checkSupabaseAccess(token);
+}
+
+async function consumeEquipmentAccess(req) {
+  // Internal test URLs with &test=1..5 should not consume customer tokens.
+  if (isInternalAutofillTest(req)) {
+    return { ok: true, skipped: true, reason: "internal_test" };
+  }
+
+  const token = extractEquipmentDemoToken(req);
+  const memoryRecord = getEquipmentDemoTokenRecord(token);
+
+  if (memoryRecord) {
+    return consumeEquipmentDemoToken(req);
+  }
+
+  return consumeSupabaseAccess(token);
 }
 
 app.post("/api/access/create-admin", async (req, res) => {
