@@ -1293,6 +1293,213 @@ app.get("/equipment-access", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "equipment-access.html"));
 });
 
+
+
+// ============================================================
+// FairVia Access Credit API — Supabase-backed admin key issuing
+// Added safely after existing equipment-access routes.
+// ============================================================
+
+const SUPABASE_URL = String(process.env.SUPABASE_URL || "").replace(/\/$/, "");
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const ACCESS_KEY_SECRET = process.env.ACCESS_KEY_SECRET || "";
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+
+if (!ADMIN_TOKEN) {
+  console.warn("⚠️ ADMIN_TOKEN not set — admin key creation API disabled");
+}
+
+function getAdminToken(req) {
+  const auth = req.headers.authorization || "";
+  if (auth.startsWith("Bearer ")) return auth.slice("Bearer ".length).trim();
+  return req.headers["x-admin-token"] || req.query.admin_token || "";
+}
+
+function hashAccessKey(plainKey) {
+  if (!ACCESS_KEY_SECRET) {
+    throw new Error("ACCESS_KEY_SECRET is not configured");
+  }
+
+  return crypto
+    .createHash("sha256")
+    .update(`${ACCESS_KEY_SECRET}:${plainKey}`)
+    .digest("hex");
+}
+
+function generatePlainAccessKey() {
+  const randomPart = crypto.randomBytes(18).toString("base64url").toUpperCase();
+  return `FV-${randomPart}`;
+}
+
+function defaultMaxUsesForPlan(planType) {
+  if (planType === "customer_adoption_pack") return 3;
+  if (planType === "partner_member_pilot") return 5;
+  return 1;
+}
+
+function publicBaseUrl(req) {
+  const envBase = String(process.env.PUBLIC_BASE_URL || "").replace(/\/$/, "");
+  if (envBase) return envBase;
+
+  const proto = req.headers["x-forwarded-proto"] || req.protocol || "https";
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  return `${proto}://${host}`;
+}
+
+async function supabaseFetch(pathname, options = {}) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not configured");
+  }
+
+  const response = await fetch(`${SUPABASE_URL}${pathname}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+
+  const text = await response.text();
+  let data = null;
+
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Supabase request failed: ${response.status} ${typeof data === "string" ? data : JSON.stringify(data)}`
+    );
+  }
+
+  return data;
+}
+
+app.post("/api/access/create-admin", async (req, res) => {
+  try {
+    const token = getAdminToken(req);
+
+    if (!ADMIN_TOKEN || token !== ADMIN_TOKEN) {
+      return res.status(401).json({
+        ok: false,
+        error: "unauthorized",
+      });
+    }
+
+    const organisationName = String(req.body.organisation_name || "").trim();
+    const contactEmail = String(req.body.contact_email || "").trim();
+    const organisationType = String(req.body.organisation_type || "single_company").trim();
+    const planType = String(req.body.plan_type || "introductory_pre_pilot_assessment").trim();
+
+    const maxUses = Number.isFinite(Number(req.body.max_uses))
+      ? Number(req.body.max_uses)
+      : defaultMaxUsesForPlan(planType);
+
+    if (!organisationName) {
+      return res.status(400).json({
+        ok: false,
+        error: "organisation_name_required",
+      });
+    }
+
+    const plainKey = generatePlainAccessKey();
+    const accessKeyHash = hashAccessKey(plainKey);
+    const accessKeyPrefix = plainKey.slice(0, 10);
+
+    const expiresAt = req.body.expires_at
+      ? new Date(req.body.expires_at).toISOString()
+      : new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString();
+
+    const payload = {
+      access_key_hash: accessKeyHash,
+      access_key_prefix: accessKeyPrefix,
+      organisation_name: organisationName,
+      contact_email: contactEmail || null,
+      organisation_type: organisationType,
+      plan_type: planType,
+      max_uses: maxUses,
+      used_count: 0,
+      status: "active",
+      expires_at: expiresAt,
+      metadata: req.body.metadata || {},
+    };
+
+    const inserted = await supabaseFetch("/rest/v1/assessment_access_keys", {
+      method: "POST",
+      headers: {
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const base = publicBaseUrl(req);
+    const accessUrl = `${base}/equipment-access?token=${encodeURIComponent(plainKey)}`;
+
+    return res.json({
+      ok: true,
+      access_key: plainKey,
+      access_key_prefix: accessKeyPrefix,
+      access_url: accessUrl,
+      organisation_name: organisationName,
+      organisation_type: organisationType,
+      plan_type: planType,
+      max_uses: maxUses,
+      remaining_uses: maxUses,
+      expires_at: expiresAt,
+      stored: Array.isArray(inserted) ? inserted[0] : inserted,
+      note: "The plain access key is shown only once. Store it securely.",
+    });
+  } catch (err) {
+    console.error("[Access Create Admin ERROR]", err);
+    return res.status(500).json({
+      ok: false,
+      error: "access_key_creation_failed",
+      detail: err.message,
+    });
+  }
+});
+
+app.post("/api/access/verify", async (req, res) => {
+  try {
+    const plainKey = String(req.body.access_key || req.query.token || req.query.access_key || "").trim();
+
+    if (!plainKey) {
+      return res.status(400).json({
+        ok: false,
+        error: "access_key_required",
+      });
+    }
+
+    const accessKeyHash = hashAccessKey(plainKey);
+
+    const result = await supabaseFetch("/rest/v1/rpc/verify_assessment_access_key", {
+      method: "POST",
+      body: JSON.stringify({
+        p_access_key_hash: accessKeyHash,
+      }),
+    });
+
+    const row = Array.isArray(result) ? result[0] : result;
+
+    return res.json({
+      ok: true,
+      access: row,
+    });
+  } catch (err) {
+    console.error("[Access Verify ERROR]", err);
+    return res.status(500).json({
+      ok: false,
+      error: "access_key_verify_failed",
+      detail: err.message,
+    });
+  }
+});
+
+
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, "0.0.0.0", () => {
